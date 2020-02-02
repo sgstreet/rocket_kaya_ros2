@@ -1,0 +1,33 @@
+kaya_vision_manager:
+  ros__parameters:
+    pipeline_components: ["kaya_vision://kaya_vision::KayaVisionChatter", "realsense_ros://realsense::RealSenseNodeFactory"]
+kaya_vision_chatter:
+  ros__parameters:
+    message: "hello from vision chatter"
+realsense_camera:
+  ros__parameters:
+    serial_no: 819312073065
+    base_frame_id: camera_link
+    align_depth: true
+    enable_pointcloud: false
+    dense_pointcloud: false
+    color0:
+      enabled: true
+      resolution: [848,480]
+      fps: 60
+    depth0:
+      enabled: true
+      resolution: [848,480]
+      fps: 60
+    infra1:
+      enabled: true
+      resolution: [848,480]
+      fps: 60
+    infra2:
+      enabled: false
+      resolution: [848,480]
+      fps: 60
+    accel0:
+      enabled: true
+    gyro0:
+      enabled: true

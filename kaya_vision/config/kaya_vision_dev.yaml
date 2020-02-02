@@ -1,0 +1,40 @@
+kaya_vision_manager:
+  ros__parameters:
+    pipeline_components: ["kaya_vision://kaya_vision::KayaVisionChatter", "kaya_vision://kaya_vision::KayaRealSenseCamera", "kaya_vision://kaya_vision::KayaTFExtinsics"]
+kaya_vision_chatter:
+  ros__parameters:
+    message: "hello from vision chatter"
+kaya_realsense_camera:
+  ros__parameters:
+    serial_no: "819312073065"
+    preset: "package://kaya_vision/config/HighResHighAccuracyPreset.json"
+    base_frame_id: camera_link
+    extrinsics_rate_hz: 1.0
+    aligned:
+      enabled: false
+      resolution: [848,480]
+      fps: 60
+    color:
+      enabled: true
+      resolution: [848,480]
+      fps: 60
+    depth:
+      enabled: true
+      resolution: [848,480]
+      fps: 60
+    infra1:
+      enabled: true
+      resolution: [848,480]
+      fps: 60
+      base_extrinsic: true
+    infra2:
+      enabled: false
+      resolution: [848,480]
+      fps: 60
+    accel:
+      enabled: false
+    gyro:
+      enabled: false
+kaya_tf_extrinsics:
+  ros__parameters:
+    cameras: ["/camera/color", "/camera/depth", "/camera/infra1"]

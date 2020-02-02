@@ -1,0 +1,23 @@
+camera:
+  ros__parameters:
+    serial_no: 819312073065
+    base_frame_id: camera_link
+    align_depth: true
+    enable_pointcloud: false
+    dense_pointcloud: false
+    color0:
+      enabled: true
+      resolution: [848,480]
+      fps: 60
+    depth0:
+      enabled: true
+      resolution: [848,480]
+      fps: 60
+    infra1:
+      enabled: true
+      resolution: [848,480]
+      fps: 60
+    infra2:
+      enabled: false
+      resolution: [848,480]
+      fps: 60

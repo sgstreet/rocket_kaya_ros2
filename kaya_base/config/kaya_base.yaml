@@ -1,0 +1,14 @@
+kaya_base:
+  ros__parameters:
+    joints:
+      u2d2: 
+        port: "/dev/ttyUSB1"
+        baud_rate: 4000000
+      names: ["wheel_1_joint", "wheel_2_joint", "wheel_3_joint"]
+      ids: [1, 2, 3]
+      model: 1060
+      update_rate_hz: 50.0
+    kinematics:
+      r: 0.041275
+      d: 0.116720
+      alpha: [ 1.047197551196598, 3.141592653589793, -1.047197551196598 ]

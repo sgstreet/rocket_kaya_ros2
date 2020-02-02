@@ -1,0 +1,7 @@
+kaya_state:
+  ros__parameters:
+    use_tf_static: true
+    kinematics:
+      r: 0.041275
+      d: 0.116720
+      alpha: [ 1.047197551196598, 3.141592653589793, -1.047197551196598 ]

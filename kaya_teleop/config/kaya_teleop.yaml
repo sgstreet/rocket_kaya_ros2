@@ -1,0 +1,19 @@
+kaya_teleop:
+  ros__parameters:
+    angular_axes:
+      yaw: 2
+    angular_scale:
+      yaw: 2.0
+    linear_axes:
+      x: 1
+      y: 0
+    linear_scale:
+      x: 0.20
+      y: 0.20
+    switches: ["teleop", "omni", "activate", "explore", "teleop", "patrol", "halt"]
+    teleop: 4
+    omni: 5
+    activate: 2
+    explore: 1
+    patrol: 3
+    halt: 0
