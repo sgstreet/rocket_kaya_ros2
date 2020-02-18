@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(kaya_realsense)
 
@@ -21,13 +21,13 @@ if(DEFINED CMAKE_BUILD_TYPE)
 endif()
 
 list(APPEND extra_cmake_args "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc")
-list(APPEND extra_cmake_args "-DBUILD_EXAMPLES=false")
-list(APPEND extra_cmake_args "-DBUILD_GRAPHICAL_EXAMPLES=false")
+list(APPEND extra_cmake_args "-DBUILD_EXAMPLES=true")
+list(APPEND extra_cmake_args "-DBUILD_GRAPHICAL_EXAMPLES=true")
 list(APPEND extra_cmake_args "-DFORCE_RSUSB_BACKEND=true")
 list(APPEND extra_cmake_args "-DHWM_OVER_XU=true")
 list(APPEND extra_cmake_args "-DBUILD_WITH_TM2=true")
 list(APPEND extra_cmake_args "-DBUILD_WITH_CUDA=true")
-list(APPEND extra_cmake_args "-DBUILD_GLSL_EXTENSIONS=false")
+list(APPEND extra_cmake_args "-DBUILD_GLSL_EXTENSIONS=true")
 list(APPEND extra_cmake_args "-DIMPORT_DEPTH_CAM_FW=true")
 list(APPEND extra_cmake_args "-DNO_LDCONFIG=true")
 
@@ -44,7 +44,17 @@ ExternalProject_Add(realsense
   GIT_REPOSITORY https://github.com/sgstreet/librealsense.git
   GIT_TAG kaya_realsense
   GIT_SHALLOW TRUE
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} ${extra_cmake_args}
+  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_install ${extra_cmake_args}
 )
+
+install(
+  DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_install/
+  DESTINATION
+    ${CMAKE_INSTALL_PREFIX}
+)
+
+ament_export_include_directories(include)
+ament_export_libraries(librealsense2.so librealsense2-gl)
 
 ament_package()

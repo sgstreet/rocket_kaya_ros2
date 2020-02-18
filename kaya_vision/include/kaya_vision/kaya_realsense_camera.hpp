@@ -41,11 +41,9 @@ class KayaRealSenseCamera final : public rclcpp::Node
 		struct StreamInfo
 		{
 			std::string frame_id;
-			bool base_extrinsic;
-			rs2_stream stream_id;
-			int stream_index;
-			int opencv_encoding;
-			std::string ros_encoding;
+			std::string image_encoding;
+			std::pair<rs2_stream, int> stream_id;
+			bool synthetic;
 			geometry_msgs::msg::TransformStamped extrinsics;
 			sensor_msgs::msg::CameraInfo intrinsics;
 			rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub;
@@ -55,15 +53,18 @@ class KayaRealSenseCamera final : public rclcpp::Node
 
 		void stream_publisher();
 		void extrinsics_publisher();
-		void initialize_extrinsics(StreamInfo& stream, const rs2::stream_profile& target_profile, const rs2::stream_profile& base_profile);
+		void initialize_extrinsics(StreamInfo& stream, const rs2::stream_profile& base_profile, const rs2::stream_profile& target_profile);
 		void initialize_intrinsics(StreamInfo& stream, const rs2::video_stream_profile& target_profile);
 		void publish_video_frame(StreamInfo& stream, rs2::video_frame& frame, rclcpp::Time timestamp);
 
 		std::chrono::nanoseconds extrinsics_pub_period;
 		std::string base_link;
 		std::string preset_json;
-		rs2::config rs_config;
 		std::map<std::string, StreamInfo> streams;
+
+		rs2::config rs_config;
+		rs2::pipeline pipeline;
+		rs2::pipeline_profile profile;
 
 		volatile bool running = true;
 		std::unique_ptr<std::thread> stream_thread;
