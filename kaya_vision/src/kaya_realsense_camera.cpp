@@ -5,6 +5,8 @@
  *      Author: Stephen Street (stephen@redrocketcomputing.com)
  */
 
+#include <kaya_vision/kaya_realsense_camera.hpp>
+
 #include <fstream>
 
 #include <eigen3/Eigen/Dense>
@@ -19,7 +21,6 @@
 #include <cv_bridge/cv_bridge.h>
 #include <tf2/LinearMath/Quaternion.h>
 
-#include <kaya_vision/kaya_realsense_camera.hpp>
 
 using namespace std::chrono_literals;
 
@@ -166,7 +167,6 @@ kaya_vision::KayaRealSenseCamera::KayaRealSenseCamera(const rclcpp::NodeOptions&
 	declare_parameter("camera.fps", 30);
 	for (auto const &sensor_name : sensor_names) {
 		declare_parameter("camera." + sensor_name + ".enabled", false);
-		declare_parameter("camera." + sensor_name + ".synthetic", sensor_name == "aligned");
 		declare_parameter("camera." + sensor_name + ".frame_id", "");
 		declare_parameter("camera." + sensor_name + ".rs_stream", "");
 		declare_parameter("camera." + sensor_name + ".rs_encoding", "");
@@ -207,16 +207,15 @@ kaya_vision::KayaRealSenseCamera::KayaRealSenseCamera(const rclcpp::NodeOptions&
 			stream_info.stream_id = to_stream_id(get_parameter("camera." + sensor_name + ".rs_stream").as_string());
 			stream_info.frame_id = get_parameter("camera." + sensor_name + ".frame_id").as_string();
 			stream_info.image_encoding = get_parameter("camera." + sensor_name + ".image_encoding").as_string();
-			stream_info.synthetic = get_parameter("camera." + sensor_name + ".synthetic").as_bool();
 
 			// Create the publishers
-			stream_info.image_pub = create_publisher<sensor_msgs::msg::Image>(get_parameter("camera." + sensor_name + ".image_topic").as_string(), 1);
-			stream_info.info_pub = create_publisher<sensor_msgs::msg::CameraInfo>(get_parameter("camera." + sensor_name + ".info_topic").as_string(), 1);
-			stream_info.extrinsics_pub = create_publisher<geometry_msgs::msg::TransformStamped>(get_parameter("camera." + sensor_name + ".extrinsics_topic").as_string(), 1);
+			rclcpp::SensorDataQoS qos;
+			stream_info.image_pub = create_publisher<sensor_msgs::msg::Image>(get_parameter("camera." + sensor_name + ".image_topic").as_string(), qos);
+			stream_info.info_pub = create_publisher<sensor_msgs::msg::CameraInfo>(get_parameter("camera." + sensor_name + ".info_topic").as_string(), qos);
+			stream_info.extrinsics_pub = create_publisher<geometry_msgs::msg::TransformStamped>(get_parameter("camera." + sensor_name + ".extrinsics_topic").as_string(), qos);
 
-			// Add to realsense configuration is not a synthetic stream
-			if (!stream_info.synthetic)
-				rs_config.enable_stream(stream_info.stream_id.first, stream_info.stream_id.second, resolution.at(0), resolution.at(1), to_stream_format(get_parameter("camera." + sensor_name + ".rs_encoding").as_string()), fps);
+			// Add to realsense configuration
+			rs_config.enable_stream(stream_info.stream_id.first, stream_info.stream_id.second, resolution.at(0), resolution.at(1), to_stream_format(get_parameter("camera." + sensor_name + ".rs_encoding").as_string()), fps);
 
 			// Save the stream info
 			streams[sensor_name] = stream_info;
@@ -240,7 +239,6 @@ kaya_vision::KayaRealSenseCamera::KayaRealSenseCamera(const rclcpp::NodeOptions&
 		// Disable auto exposure priority
 		if (sensor.supports(RS2_OPTION_AUTO_EXPOSURE_PRIORITY))
 			sensor.set_option(RS2_OPTION_AUTO_EXPOSURE_PRIORITY, 0);
-
 	}
 
 	// To initialize the extrinsics we need the profile of the reference frame
@@ -253,13 +251,11 @@ kaya_vision::KayaRealSenseCamera::KayaRealSenseCamera(const rclcpp::NodeOptions&
 	// If we got a base profile initialize the extrinsics
 	if (base_profile)
 		for (auto & [sensor_name, info] : streams) {
-			if (!info.synthetic) {
-				rs2::stream_profile target_profile = profile.get_stream(info.stream_id.first, info.stream_id.second);
-				std::string target_frame_id = get_parameter("camera." + sensor_name + ".frame_id").as_string();
-				initialize_extrinsics(info, base_profile, target_profile);
-				if (target_profile.is<rs2::video_stream_profile>())
-					initialize_intrinsics(info, target_profile.as<rs2::video_stream_profile>());
-			}
+			rs2::stream_profile target_profile = profile.get_stream(info.stream_id.first, info.stream_id.second);
+			std::string target_frame_id = get_parameter("camera." + sensor_name + ".frame_id").as_string();
+			initialize_extrinsics(info, base_profile, target_profile);
+			if (target_profile.is<rs2::video_stream_profile>())
+				initialize_intrinsics(info, target_profile.as<rs2::video_stream_profile>());
 		}
 
 	// Ready to go, start the camera publisher thread
@@ -320,12 +316,11 @@ void kaya_vision::KayaRealSenseCamera::stream_publisher()
 
 void kaya_vision::KayaRealSenseCamera::extrinsics_publisher()
 {
-	for (auto & entry : streams) {
+	for (auto & entry : streams)
 		if (entry.second.extrinsics_pub->get_subscription_count() > 0) {
 			entry.second.extrinsics.header.stamp = now();
 			entry.second.extrinsics_pub->publish(entry.second.extrinsics);
 		}
-	}
 }
 
 void kaya_vision::KayaRealSenseCamera::publish_video_frame(StreamInfo& stream, rs2::video_frame& frame, rclcpp::Time timestamp)

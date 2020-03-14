@@ -43,7 +43,6 @@ class KayaRealSenseCamera final : public rclcpp::Node
 			std::string frame_id;
 			std::string image_encoding;
 			std::pair<rs2_stream, int> stream_id;
-			bool synthetic;
 			geometry_msgs::msg::TransformStamped extrinsics;
 			sensor_msgs::msg::CameraInfo intrinsics;
 			rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub;

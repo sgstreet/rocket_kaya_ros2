@@ -13,6 +13,7 @@
 #include <rclcpp/node.hpp>
 
 #include <std_msgs/msg/string.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 namespace kaya_vision {
 
@@ -25,9 +26,14 @@ class KayaVisionChatter final : public rclcpp::Node
 	private:
 
 		void chatter_timer_callback();
+		void image_callback(const sensor_msgs::msg::Image::SharedPtr __attribute__((unused)) msg, const int index);
 
-		std_msgs::msg::String chatter_msg;
+		std::vector<std::string> cameras;
+		rclcpp::Time last_timestamp;
+		std::vector<int> last_counters;
+		std::vector<int> frame_counters;
 		rclcpp::Publisher<std_msgs::msg::String>::SharedPtr chatter_publisher;
+		std::vector<rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr> camera_subs;
 		rclcpp::TimerBase::SharedPtr chatter_timer;
 };
 

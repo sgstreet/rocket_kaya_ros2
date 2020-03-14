@@ -12,7 +12,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 
-set(PACKAGE_VERSION "2.31.0")
+set(PACKAGE_VERSION "2.33.1")
 
 set(extra_cmake_args)
   
@@ -21,13 +21,13 @@ if(DEFINED CMAKE_BUILD_TYPE)
 endif()
 
 list(APPEND extra_cmake_args "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc")
-list(APPEND extra_cmake_args "-DBUILD_EXAMPLES=true")
-list(APPEND extra_cmake_args "-DBUILD_GRAPHICAL_EXAMPLES=true")
+list(APPEND extra_cmake_args "-DBUILD_EXAMPLES=false")
+list(APPEND extra_cmake_args "-DBUILD_GRAPHICAL_EXAMPLES=false")
 list(APPEND extra_cmake_args "-DFORCE_RSUSB_BACKEND=true")
 list(APPEND extra_cmake_args "-DHWM_OVER_XU=true")
 list(APPEND extra_cmake_args "-DBUILD_WITH_TM2=true")
 list(APPEND extra_cmake_args "-DBUILD_WITH_CUDA=true")
-list(APPEND extra_cmake_args "-DBUILD_GLSL_EXTENSIONS=true")
+list(APPEND extra_cmake_args "-DBUILD_GLSL_EXTENSIONS=false")
 list(APPEND extra_cmake_args "-DIMPORT_DEPTH_CAM_FW=true")
 list(APPEND extra_cmake_args "-DNO_LDCONFIG=true")
 
@@ -55,6 +55,6 @@ install(
 )
 
 ament_export_include_directories(include)
-ament_export_libraries(librealsense2.so librealsense2-gl)
+ament_export_libraries(librealsense2.so)
 
 ament_package()

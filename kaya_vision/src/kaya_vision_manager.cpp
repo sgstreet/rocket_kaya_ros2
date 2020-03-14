@@ -5,11 +5,14 @@
  *      Author: Stephen Street (stephen@redrocketcomputing.com)
  */
 
+#include <chrono>
+
+#include <kaya_vision/kaya_vision_manager.hpp>
+
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
-#include <kaya_vision/kaya_vision_manager.hpp>
-#include <kaya_vision/kaya_vision_chatter.hpp>
+using namespace std::chrono_literals;
 
 static inline std::string to_classname(const std::string& component)
 {
@@ -32,10 +35,15 @@ rclcpp_lifecycle::LifecycleNode("kaya_vision_manager", options)
 {
 	// Declare all parameters
 	declare_parameter("pipeline_components");
+
+	// Add ourselves to the executor
+	pipeline_executor.add_node(get_node_base_interface());
 }
 
 kaya_vision::KayaVisionManager::~KayaVisionManager()
 {
+	// Clean up
+	pipeline_executor.remove_node(get_node_base_interface());
 }
 
 kaya_vision::KayaVisionManager::CallbackReturn kaya_vision::KayaVisionManager::on_configure(const rclcpp_lifecycle::State& /*previous_state*/)
@@ -80,35 +88,34 @@ kaya_vision::KayaVisionManager::CallbackReturn kaya_vision::KayaVisionManager::o
 
 kaya_vision::KayaVisionManager::CallbackReturn kaya_vision::KayaVisionManager::on_shutdown(const rclcpp_lifecycle::State& /*previous_state*/)
 {
-	if (pipeline_thread) {
-		pipeline_executor.cancel();
-		pipeline_thread->join();
-		pipeline_thread.reset();
-		pipeline.clear();
-	}
+	// Let the pipe executor know it is time to shutdown
+	shutdown = true;
+
 	return CallbackReturn::SUCCESS;
 }
 
 kaya_vision::KayaVisionManager::CallbackReturn kaya_vision::KayaVisionManager::on_activate(const rclcpp_lifecycle::State& /*previous_state*/)
 {
+	// Set the options
+	rclcpp::NodeOptions options = get_node_options();
+
 	// Create the nodes
 	for (auto &pipeline_entry : pipeline) {
 		auto factory = pipeline_entry.classloader->createInstance<rclcpp_components::NodeFactory>(pipeline_entry.name);
-		pipeline_entry.node_wrapper = factory->create_node_instance(get_node_options());
+		pipeline_entry.node_wrapper = factory->create_node_instance(options.use_intra_process_comms(true));
+		pipeline_executor.add_node(pipeline_entry.node_wrapper.get_node_base_interface());
 	}
-
-	pipeline_thread = std::make_unique<std::thread>(&KayaVisionManager::pipeline_spin, this);
 
 	return CallbackReturn::SUCCESS;
 }
 
 kaya_vision::KayaVisionManager::CallbackReturn kaya_vision::KayaVisionManager::on_deactivate(const rclcpp_lifecycle::State& /*previous_state*/)
 {
-	pipeline_executor.cancel();
-	pipeline_thread->join();
-	pipeline_thread.reset();
-	for (auto &pipeline_entry : pipeline)
+	for (auto &pipeline_entry : pipeline) {
+		pipeline_executor.remove_node(pipeline_entry.node_wrapper.get_node_base_interface());
 		pipeline_entry.node_wrapper = rclcpp_components::NodeInstanceWrapper();
+	}
+
 	return CallbackReturn::SUCCESS;
 }
 
@@ -119,16 +126,9 @@ kaya_vision::KayaVisionManager::CallbackReturn kaya_vision::KayaVisionManager::o
 
 void kaya_vision::KayaVisionManager::pipeline_spin()
 {
-	// Add all the nodes
-	for (auto pipeline_entry : pipeline)
-		pipeline_executor.add_node(pipeline_entry.node_wrapper.get_node_base_interface());
-
 	// Run the executor
-	pipeline_executor.spin();
-
-	// Remove all the nodes
-	for (auto pipeline_entry : pipeline)
-		pipeline_executor.remove_node(pipeline_entry.node_wrapper.get_node_base_interface());
+	while (!shutdown)
+		pipeline_executor.spin_some(1s);
 }
 
 RCLCPP_COMPONENTS_REGISTER_NODE(kaya_vision::KayaVisionManager)

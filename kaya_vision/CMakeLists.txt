@@ -35,7 +35,7 @@ find_package(kaya_realsense REQUIRED)
 
 include_directories(include ${OpenCV_INCLUDE_DIRS})
 
-add_library(kaya_vision SHARED src/kaya_vision_manager.cpp src/kaya_vision_chatter.cpp src/kaya_realsense_camera.cpp src/kaya_tf_extrinsics.cpp)
+add_library(kaya_vision SHARED src/kaya_vision_manager.cpp src/kaya_vision_chatter.cpp src/kaya_realsense_camera.cpp src/kaya_tf_extrinsics.cpp src/kaya_vision_viewer.cpp)
 ament_target_dependencies(kaya_vision rclcpp rclcpp_components rclcpp_lifecycle lifecycle_msgs tf2_ros sensor_msgs geometry_msgs cv_bridge OpenCV resource_retriever kaya_realsense)
 target_link_libraries(kaya_vision resource_retriever::resource_retriever)
 
@@ -45,8 +45,13 @@ add_executable(kaya_vision_node src/kaya_vision_node.cpp)
 ament_target_dependencies(kaya_vision_node rclcpp rclcpp_components rclcpp_lifecycle lifecycle_msgs tf2_ros sensor_msgs geometry_msgs cv_bridge OpenCV resource_retriever kaya_realsense)
 target_link_libraries(kaya_vision_node kaya_vision)
 
+add_executable(kaya_vision_viewer_node src/kaya_vision_viewer_node.cpp)
+ament_target_dependencies(kaya_vision_viewer_node rclcpp rclcpp_components sensor_msgs cv_bridge OpenCV)
+target_link_libraries(kaya_vision_viewer_node kaya_vision)
+
 install(TARGETS
   kaya_vision_node
+  kaya_vision_viewer_node
   DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS

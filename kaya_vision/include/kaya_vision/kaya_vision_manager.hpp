@@ -32,6 +32,8 @@ class KayaVisionManager : public rclcpp_lifecycle::LifecycleNode
 		explicit KayaVisionManager(const rclcpp::NodeOptions& options);
 		virtual ~KayaVisionManager();
 
+		void pipeline_spin();
+
 		virtual CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state);
 		virtual CallbackReturn on_cleanup(const rclcpp_lifecycle::State& previous_state);
 		virtual CallbackReturn on_shutdown(const rclcpp_lifecycle::State& previous_state);
@@ -48,11 +50,11 @@ class KayaVisionManager : public rclcpp_lifecycle::LifecycleNode
 		};
 
 		std::vector<pipeline_entry> pipeline;
+		std::atomic_bool shutdown = false;
 
 		rclcpp::executors::MultiThreadedExecutor pipeline_executor;
-		std::unique_ptr<std::thread> pipeline_thread;
+//		std::unique_ptr<std::thread> pipeline_thread;
 
-		void pipeline_spin();
 };
 
 }

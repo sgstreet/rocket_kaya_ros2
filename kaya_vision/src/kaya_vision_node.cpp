@@ -8,18 +8,17 @@
 #include <memory>
 
 #include <rclcpp/rclcpp.hpp>
+
 #include <kaya_vision/kaya_vision_manager.hpp>
 
 int main(int argc, char * argv[])
 {
+	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
 	rclcpp::init(argc, argv);
 
-	rclcpp::executors::SingleThreadedExecutor executor;
-
-    auto kaya_vision_manager = std::make_shared<kaya_vision::KayaVisionManager>(rclcpp::NodeOptions());
-
-    executor.add_node(kaya_vision_manager->get_node_base_interface());
-    executor.spin();
+	auto kaya_vision_manager = std::make_shared<kaya_vision::KayaVisionManager>(rclcpp::NodeOptions());
+	kaya_vision_manager->pipeline_spin();
 
     rclcpp::shutdown();
 

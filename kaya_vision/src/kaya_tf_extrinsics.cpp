@@ -5,13 +5,14 @@
  *      Author: Stephen Street (stephen@redrocketcomputing.com)
  */
 
+#include <kaya_vision/kaya_tf_extrinsics.hpp>
+
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
-#include "kaya_vision/kaya_tf_extrinsics.hpp"
 
-kaya_vision::KayaTFExtinsics::KayaTFExtinsics(const rclcpp::NodeOptions& options) :
-	Node("kaya_tf_extrinsics", options)
+kaya_vision::KayaTFExtinsics::KayaTFExtinsics(const rclcpp::NodeOptions& /* options */) :
+	Node("kaya_tf_extrinsics", rclcpp::NodeOptions())
 {
 	// Declare parameters
 	declare_parameter("cameras", std::vector<std::string>());
@@ -23,7 +24,7 @@ kaya_vision::KayaTFExtinsics::KayaTFExtinsics(const rclcpp::NodeOptions& options
 	auto cameras = get_parameter("cameras").as_string_array();
 	for (auto const& camera : cameras) {
 		RCLCPP_INFO(get_logger(), "publishing transform for %s", camera.c_str());
-		extrinsics_subs.push_back(create_subscription<geometry_msgs::msg::TransformStamped>(camera + "/extrinsics", 10, std::bind(&KayaTFExtinsics::extrinsics_callback, this, std::placeholders::_1)));
+		extrinsics_subs.push_back(create_subscription<geometry_msgs::msg::TransformStamped>(camera, 1, std::bind(&KayaTFExtinsics::extrinsics_callback, this, std::placeholders::_1)));
 	}
 }
 
