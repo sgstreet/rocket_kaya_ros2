@@ -41,7 +41,7 @@ endif()
 include(ExternalProject)
   
 ExternalProject_Add(realsense
-  GIT_REPOSITORY https://github.com/sgstreet/librealsense.git
+  GIT_REPOSITORY https://github.com/rocket-kaya/librealsense.git
   GIT_TAG kaya_realsense
   GIT_SHALLOW TRUE
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_install ${extra_cmake_args}
