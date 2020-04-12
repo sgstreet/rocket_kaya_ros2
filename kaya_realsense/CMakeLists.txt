@@ -12,7 +12,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 
-set(PACKAGE_VERSION "2.33.1")
+set(PACKAGE_VERSION "2.34.0")
 
 set(extra_cmake_args)
   
